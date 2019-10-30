@@ -1,15 +1,11 @@
 const express = require("express");
-const cookieParser = require('cookie-parser')
 const app = express();
+const cookieParser = require('cookie-parser')
+app.use(cookieParser())
 const PORT = 8080; // default port 8080
 const request = require('request');
 
 app.set("view engine", "ejs");
-app.use(cookieParser())
-
-
-
-
 
 
 const urlDatabase = {
@@ -26,28 +22,37 @@ function generateRandomString() {
 
 
 
+
 // app.get("/urls.json", (req, res) => {
 //   res.json(urlDatabase);
 // });
 
 
  app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
+  //res.render("urls_new");
 });
 
- app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+app.get("/urls", (req, res) => {
+    let templateVars = { urls: urlDatabase,
+    username: req.cookies["username"] 
+  };
   res.render("urls_index", templateVars);
 });
 
 //return random 6 digit alphanumeric shorturl for any http webpage
 app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
+  console.log(newShortURL);
 
-  if(req.body.longURL.startsWith('http://')) {
+  //console.log(req.body.longURL);
+  if((req.body.longURL.startsWith('https://')) || (req.body.longURL.startsWith('https://'))) {
     urlDatabase[newShortURL] = req.body.longURL;
   } else {
-    urlDatabase[newShortURL] = `http://${req.body.longURL}`;
+    urlDatabase[newShortURL] = `https://${req.body.longURL}`;
   }
 
 request(urlDatabase[newShortURL], (error) => {
@@ -58,13 +63,27 @@ request(urlDatabase[newShortURL], (error) => {
 });
 });
 
+//LOGIN
+app.post('/urls/login', (req, res) => {
+  // Cookies that have not been signed
+  res.cookie('username', req.body.username); 
+  res.redirect('/urls')
+})
+
+//LOGOUT
+app.post('/urls/logout', (req, res) => {
+  // Cookies that have not been signed
+  res.clearCookie('username', req.body.username); 
+  res.redirect('/urls')
+})
+
 app.get("/urls/:id", (req, res) => {
   let longURL = urlDatabase[req.params.id]
   let templateVars = { 
-    shortURL: req.params.id, 
-    longURL: longURL,
-    urlDatabase: urlDatabase
-  };
+    shortURL: req.params.id,
+    username: req.cookies["username"],
+    longURL: longURL
+    };
   res.render("urls_show", templateVars);
 });
 
@@ -72,6 +91,7 @@ app.get("/urls/:id", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   urlDatabase[shortURL] = req.body.longURL;
+  console.log('hitting id post')
   res.redirect("/urls/" + shortURL);
 });
 
@@ -91,14 +111,15 @@ app.post("/urls/:id/delete", (req, res) => {
 //   res.redirect("/urls/");
 // });
 
+//Edit
 app.post("/urls/:id/update", (req, res) => {
   let shortURL = req.params.id;
   let longURL = req.body.longURL;
 
-  if(longURL.startsWith('http://')) {
+  if(longURL.startsWith('https://')) {
     urlDatabase[shortURL] = longURL;
   } else {
-    urlDatabase[shortURL] = `http://${longURL}`;
+    urlDatabase[shortURL] = `https://${longURL}`;
   }
 
 request(urlDatabase[shortURL], (error) => {
@@ -109,6 +130,9 @@ request(urlDatabase[shortURL], (error) => {
 });
 
 })
+
+
+  
 
 
 
