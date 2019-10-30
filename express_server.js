@@ -49,7 +49,7 @@ app.post("/urls", (req, res) => {
   console.log(newShortURL);
 
   //console.log(req.body.longURL);
-  if((req.body.longURL.startsWith('https://')) || (req.body.longURL.startsWith('https://'))) {
+  if((req.body.longURL.startsWith('https://')) || (req.body.longURL.startsWith('http://'))) {
     urlDatabase[newShortURL] = req.body.longURL;
   } else {
     urlDatabase[newShortURL] = `https://${req.body.longURL}`;
