@@ -7,8 +7,8 @@
 </head>
 
 <head>
-    <% include ./partials/_header %>
-  </head>
+  <% include ./partials/_header %>
+</head>
 
 <body>
   <div class="card text-center">
@@ -24,9 +24,9 @@
       <div class="card-footer text-muted">
       <h3 class="text-muted">Edit</h3>
       <form class="form-inline justify-content-center" method= "POST" action="/urls/<%= shortURL %>/update">
-          <label for="longURL">New URL</label>
-          <input class="form-control" type="text" name="longURL" placeholder="https://" style="width: 300px; margin: 1em">
-          <button type="submit" class="btn btn-primary">Submit</button>
+        <label for="longURL">New URL</label>
+        <input class="form-control" type="text" name="longURL" placeholder="https://" style="width: 300px; margin: 1em">
+        <button type="submit" class="btn btn-primary">Submit</button>
       </form>
     </div>
   </div>
