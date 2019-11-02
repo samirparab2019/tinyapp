@@ -8,8 +8,8 @@ You will build an HTTP Server that handles requests from the browser (client). A
 
 ## Final Product
 
-!["screenshot description"](#)
-!["screenshot description"](#)
+!["Login Page"](https://github.com/samirparab2019/tinyapp/blob/master/docs/Login.png)
+!["Registration Page"](https://github.com/samirparab2019/tinyapp/blob/master/docs/Register.png)
 
 ## Dependencies
 
