@@ -34,7 +34,6 @@ function getUserByEmail(email, database) {
     } else {
       return undefined;
     }
-
   }
 }
 

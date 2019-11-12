@@ -46,16 +46,30 @@ const users = {
   }
 }
 
+app.get('/', (req, res) => {
+  if (users[req.session.id]) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
+});
+
+
+
 //-------------------------------> Main page
 app.get('/urls', (req, res) => {
   let templateVars = {
     urls: urlsOfUser(req.session.id, urlDatabase),
     user: users[req.session.id] 
   };
-  res.render('urls_index', templateVars);
+  if (!users[req.session.id]) {
+    res.redirect('/login');
+  } else {
+    res.render('urls_index', templateVars);
+  }
 });
 
-// -------------------------------> New URL Page
+//-------------------------------> New URL Page
 app.get('/urls/new', (req, res) => {
   let templateVars = {
     user: users[req.session.id]
@@ -65,12 +79,15 @@ app.get('/urls/new', (req, res) => {
 
 // --------------------------------> Reads the short URL
 app.get('/urls/:id', (req, res) => {
-  let longURL = urlDatabase[req.params.id].longURL;
+  if (!users[req.session.id]) {
+    return res.redirect('/login');
+  }
+  let longURL = urlDatabase[req.params.id].longURL; 
   let templateVars = { 
     shortURL: req.params.id,
     user: users[req.session.id],
     longURL: longURL
-    };
+  };
   res.render('urls_show', templateVars);
 });
 
@@ -83,20 +100,20 @@ app.get('/u/:id', (req, res) => {
 app.post('/urls', (req, res) => {
   const newShortURL = generateRandomString();
   const longURL = req.body.longURL;
-  
-    if((longURL.startsWith('http://')) || (longURL.startsWith('www://'))) {
-      urlDatabase[newShortURL] = {
-        longURL: req.body.longURL,
-        userID: ['id']
-      };
-    } else {
-      urlDatabase[newShortURL] = {
-        longURL: `http://${req.body.longURL}`,
-        userID: req.session.id
-      };
-    }
-    res.redirect(`/urls/${newShortURL}`);
-  });
+  if (!users[req.session.id]) return res.redirect('/login');
+  if((longURL.startsWith('http')) || (longURL.startsWith('www://'))) {
+    urlDatabase[newShortURL] = {
+      longURL: longURL,
+      userID: req.session.id
+    };
+  } else {
+    urlDatabase[newShortURL] = {
+      longURL: `http://${longURL}`,
+      userID: req.session.id
+    };
+  }
+  res.redirect(`/urls/${newShortURL}`);
+});
 
 //-------------------------------> Short URL Page
 app.post('/urls/:id', (req, res) => {
@@ -150,7 +167,7 @@ app.post('/login', (req, res) => { // Checking if the inofrmation been entered c
   }
 });
 
-//register 
+// -----------------------------> register 
 app.post('/register', (req, res) => {
   const id = generateRandomString();
   let email = req.body.email;
@@ -164,7 +181,7 @@ app.post('/register', (req, res) => {
   
   for (let check in users) {
     if (email === users[check].email) {
-      res.status(400)
+      res.status(400);
       res.send('email exists, plase use another email.');
       return;
     } 
@@ -172,16 +189,16 @@ app.post('/register', (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10)
   req.session.id = id;
   users[id] = { id, email, password: hashedPassword };
-  res.redirect('/urls')
+  res.redirect('/urls');
 })
 
 // -----------------------------> Logout
-app.post('/urls/logout', (req, res) => {
+app.post('/logout', (req, res) => {
   // Cookies that have not been signed
   req.session.id = 'id'; 
   req.session.email = 'email';
   req.session.password = 'password';
-  res.redirect('/urls')
+  res.redirect('/login')
 })
 
 // ------------------------------> Updates the short URL
